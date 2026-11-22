@@ -1,0 +1,15 @@
+EmberWM includes code adapted from Smithay / smallvil, version 0.7.0.
+Upstream: https://github.com/Smithay/smithay/tree/v0.7.0/smallvil
+Commit: a166cf4c94b5aedc332a65aa1dd753e8148829c3
+Copyright (c) 2017 Victor Berger and Victoria Brekenfeld
+Licensed under the MIT License reproduced in LICENSE.
+
+The original compositor, xdg-shell, seat/data-device, move-grab and resize-grab
+scaffolding has been retained and modified. The Ember-specific configuration,
+window policy, workspace support, draw-terminal handling, rendering/theme,
+control socket, wallpaper artwork and developer tooling were added in 2026.
+
+The built-in Ember Panel Mono is a renamed subset of DejaVu Sans Mono,
+distributed under the Bitstream
+Vera / DejaVu font terms in assets/fonts/LICENSE-DejaVu. DejaVu changes are in
+the public domain. Font source: https://dejavu-fonts.github.io/

@@ -1,0 +1,58 @@
+version = 1
+
+[theme]
+background = "#101526"
+active_border = "#7aa2f7"
+inactive_border = "#303952"
+selection = "#bb9af7"
+border_width = 2
+wallpaper = ""
+
+[layout]
+gap = 16
+master_ratio = 0.60
+
+[panels]
+enabled = true
+font = "builtin"
+font_size = 12.0
+height = 28
+margin = 12
+padding = 12
+spacing = 10
+background = "#181f33"
+foreground = "#c0caf5"
+accent = "#7aa2f7"
+border_color = "#303952"
+border_width = 1
+opacity = 0.96
+hide_empty_workspaces = false
+
+[[panels.items]]
+name = "workspaces"
+anchor = "top-left"
+modules = ["workspaces"]
+reserve_space = true
+
+[[panels.items]]
+name = "clock"
+anchor = "top-center"
+modules = ["clock", "date"]
+reserve_space = true
+
+[[panels.items]]
+name = "status"
+anchor = "top-right"
+modules = ["volume", "memory"]
+reserve_space = true
+
+[launcher]
+width = 680
+font_size = 15.0
+rows = 9
+
+[shortcuts]
+font_size = 13.0
+
+[wifi]
+font_size = 14.0

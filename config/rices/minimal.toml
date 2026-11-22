@@ -1,0 +1,22 @@
+version = 1
+
+[theme]
+background = "#101010"
+active_border = "#dddddd"
+inactive_border = "#444444"
+selection = "#aaaaaa"
+border_width = 1
+wallpaper = ""
+
+[layout]
+gap = 6
+master_ratio = 0.58
+
+[panels]
+enabled = false
+items = []
+font = "builtin"
+background = "#1b1b1b"
+foreground = "#eeeeee"
+accent = "#dddddd"
+border_color = "#444444"

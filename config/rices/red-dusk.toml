@@ -1,0 +1,54 @@
+version = 1
+
+[theme]
+background = "#23181a"
+active_border = "#793b48"
+inactive_border = "#23181a"
+selection = "#b35c70"
+selection_opacity = 0.4
+border_width = 1
+wallpaper = "../../assets/abbey-oakwood.jpg"
+wallpaper_mode = "fill"
+# Native colouring of the downloaded original; not the exact red edit from the video.
+wallpaper_palette = ["#1b0b0e", "#b3696a"]
+
+[layout]
+gap = 10
+master_ratio = 0.58
+
+[panels]
+enabled = true
+font = "builtin"
+font_size = 11.0
+height = 21
+margin = 8
+padding = 6
+spacing = 4
+workspace_padding = 9
+opacity = 0.96
+border_width = 0
+background = "#201517"
+foreground = "#d4c5c8"
+accent = "#b86b7c"
+border_color = "#60313c"
+
+[[panels.items]]
+name = "main"
+offset_x = 4
+anchor = "top-left"
+modules = ["workspaces", "clock"]
+reserve_space = true
+
+[[panels.items]]
+name = "system"
+enabled = false
+anchor = "top-right"
+modules = ["cpu", "memory", "volume"]
+reserve_space = true
+
+[notifications]
+width = 360
+margin = 12
+gap = 8
+compact = true
+respect_panel_space = false

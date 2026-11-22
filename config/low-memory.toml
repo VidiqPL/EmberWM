@@ -1,0 +1,43 @@
+# Optional native preset: solid background, no idle panel/font buffers.
+# Notifications, Wi-Fi, launcher and portal sharing still load when needed.
+[display]
+refresh_hz = 144.0
+
+[audio]
+enabled = true
+
+[keyboard]
+modifier = "Super"
+
+[theme]
+wallpaper = ""
+
+[panels]
+enabled = false
+
+[launcher]
+enabled = true
+
+[wifi]
+enabled = true
+
+[screencast]
+enabled = true
+
+# Release game mouse capture; cycle appearance presets.
+[[bindings]]
+key = "Escape"
+action = "pointer-release"
+
+[[bindings]]
+key = "t"
+action = "theme-cycle"
+
+# Complete appearance profiles (panels, spacing, fonts and wallpaper).
+[rice]
+profile = ""
+
+[[bindings]]
+key = "t"
+shift = true
+action = "rice-cycle"

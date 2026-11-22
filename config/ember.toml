@@ -1,0 +1,381 @@
+# EmberWM: red dusk default. Use wallpaper = "" for the lowest idle RAM.
+terminal = [
+    "kitty",
+    "--class",
+    "{app_id}",
+    "--override",
+    "linux_display_server=wayland",
+    "--override",
+    "background={background}",
+    "--override",
+    "foreground={foreground}",
+    "--override",
+    "hide_window_decorations=yes",
+    "--override",
+    "font_size=9.0",
+    "--override",
+    "window_padding_width=8",
+    "--override",
+    "cursor={accent}",
+    "--override",
+    "background_opacity=1.0",
+]
+
+[xwayland]
+# Start X11 compatibility only when an X11 app or clipboard client connects.
+enabled = true
+
+[display]
+refresh_hz = 0.0
+
+[audio]
+enabled = true
+osd_enabled = true
+osd_duration_ms = 1000
+
+[theme]
+background = "#23181a"
+active_border = "#793b48"
+inactive_border = "#23181a"
+selection = "#b35c70"
+selection_opacity = 0.4
+border_width = 1
+wallpaper = "../assets/abbey-oakwood.jpg"
+wallpaper_mode = "fill"
+# Native colouring of the downloaded original; not the exact red edit from the video.
+wallpaper_palette = ["#1b0b0e", "#b3696a"]
+
+[layout]
+gap = 10
+master_ratio = 0.58
+workspaces = 10
+default_floating = false
+
+[keyboard]
+modifier = "Alt"
+xkb_layout = "us"
+repeat_delay = 300
+repeat_rate = 30
+
+[[bindings]]
+key = "Return"
+action = "terminal"
+shift = false
+
+[[bindings]]
+key = "d"
+action = "draw"
+shift = false
+
+[[bindings]]
+key = "q"
+action = "close"
+shift = false
+
+[[bindings]]
+key = "space"
+action = "launcher-toggle"
+shift = false
+
+[[bindings]]
+key = "j"
+action = "focus-next"
+shift = false
+
+[[bindings]]
+key = "k"
+action = "focus-prev"
+shift = false
+
+[[bindings]]
+key = "h"
+action = "ratio-down"
+shift = false
+
+[[bindings]]
+key = "l"
+action = "ratio-up"
+shift = false
+
+[[bindings]]
+key = "r"
+action = "reload"
+shift = false
+
+[[bindings]]
+key = "f"
+action = "fullscreen"
+shift = false
+
+[[bindings]]
+key = "Escape"
+action = "quit"
+shift = true
+
+[[bindings]]
+key = "1"
+action = "workspace 1"
+shift = false
+
+[[bindings]]
+key = "1"
+action = "send 1"
+shift = true
+
+[[bindings]]
+key = "2"
+action = "workspace 2"
+shift = false
+
+[[bindings]]
+key = "2"
+action = "send 2"
+shift = true
+
+[[bindings]]
+key = "3"
+action = "workspace 3"
+shift = false
+
+[[bindings]]
+key = "3"
+action = "send 3"
+shift = true
+
+[[bindings]]
+key = "4"
+action = "workspace 4"
+shift = false
+
+[[bindings]]
+key = "4"
+action = "send 4"
+shift = true
+
+[[bindings]]
+key = "5"
+action = "workspace 5"
+shift = false
+
+[[bindings]]
+key = "5"
+action = "send 5"
+shift = true
+
+[[bindings]]
+key = "6"
+action = "workspace 6"
+shift = false
+
+[[bindings]]
+key = "6"
+action = "send 6"
+shift = true
+
+[[bindings]]
+key = "7"
+action = "workspace 7"
+shift = false
+
+[[bindings]]
+key = "7"
+action = "send 7"
+shift = true
+
+[[bindings]]
+key = "8"
+action = "workspace 8"
+shift = false
+
+[[bindings]]
+key = "8"
+action = "send 8"
+shift = true
+
+[[bindings]]
+key = "9"
+action = "workspace 9"
+shift = false
+
+[[bindings]]
+key = "9"
+action = "send 9"
+shift = true
+
+
+[[bindings]]
+key = "XF86AudioRaiseVolume"
+action = "volume-up"
+modifier = false
+
+[[bindings]]
+key = "XF86AudioLowerVolume"
+action = "volume-down"
+modifier = false
+
+[[bindings]]
+key = "XF86AudioMute"
+action = "mute"
+modifier = false
+
+[[bindings]]
+key = "XF86AudioMicMute"
+action = "mic-mute"
+modifier = false
+
+# Native panels: remove all with enabled = false or items = [].
+[panels]
+enabled = true
+font = "builtin"
+font_size = 11.0
+height = 21
+margin = 8
+padding = 6
+spacing = 4
+workspace_padding = 9
+background = "#201517"
+foreground = "#d4c5c8"
+accent = "#b86b7c"
+border_color = "#60313c"
+border_width = 0
+opacity = 0.96
+hide_empty_workspaces = true
+hide_on_fullscreen = true
+poll_interval_secs = 5
+
+[[panels.items]]
+name = "main"
+offset_x = 4
+anchor = "top-left"
+modules = ["workspaces", "clock"]
+clock_format = "%H:%M"
+reserve_space = true
+
+# Enable this panel or copy it to add more panels.
+[[panels.items]]
+name = "system"
+enabled = false
+anchor = "top-right"
+modules = ["cpu", "memory", "volume"]
+reserve_space = true
+
+[[bindings]]
+key = "b"
+action = "panels-toggle"
+
+# The sheet is generated from the bindings above; changes appear after Mod+R.
+[[bindings]]
+key = "slash"
+action = "shortcuts-toggle"
+
+[[bindings]]
+key = "n"
+action = "notification-dismiss"
+
+[shortcuts]
+enabled = true
+width = 860
+font_size = 12.0
+
+[notifications]
+enabled = true
+compact = true
+respect_panel_space = false
+width = 360
+margin = 12
+gap = 8
+max_visible = 4
+max_queued = 32
+timeout_ms = 5000
+do_not_disturb = false
+critical_bypass_dnd = true
+
+[[bindings]]
+key = "0"
+action = "workspace 10"
+
+[[bindings]]
+key = "0"
+shift = true
+action = "send 10"
+
+# Global F11 toggles the focused window; remove to let apps receive F11 themselves.
+[[bindings]]
+key = "F11"
+action = "fullscreen"
+modifier = false
+
+# Example only: enable and customize it to place Sober on workspace 10.
+[[window_rules]]
+name = "Sober example"
+enabled = false
+app_id = "org.vinegarhq.Sober"
+workspace = 10
+follow = true
+
+[[bindings]]
+key = "s"
+shift = true
+action = "screenshot-region"
+
+# Native Wi-Fi popup; inherits panel colours and font.
+[wifi]
+enabled = true
+width = 540
+font_size = 13.0
+
+[[bindings]]
+key = "period"
+action = "wifi-toggle"
+
+[launcher]
+enabled = true
+width = 640
+font_size = 14.0
+rows = 8
+
+[[bindings]]
+key = "space"
+shift = true
+action = "float"
+
+# Portal screen sharing is on demand and asks before sharing.
+[screencast]
+enabled = true
+
+# Release game mouse capture; cycle appearance presets.
+[[bindings]]
+key = "Escape"
+action = "pointer-release"
+
+[[bindings]]
+key = "t"
+action = "theme-cycle"
+
+# Complete appearance profiles (panels, spacing, fonts and wallpaper).
+[rice]
+profile = ""
+
+[[bindings]]
+key = "t"
+shift = true
+action = "rice-cycle"
+
+# Floating scratchpad group, inspired by the Hyprland magic special workspace.
+[[bindings]]
+key = "g"
+shift = true
+action = "scratchpad-mark"
+
+[[bindings]]
+key = "g"
+action = "scratchpad-toggle"
+
+[[bindings]]
+key = "comma"
+action = "tray-toggle"
+
+[tray]
+enabled = true
+width = 460
+font_size = 13.0

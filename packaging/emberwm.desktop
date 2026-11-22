@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=EmberWM
+Comment=Experimental Wayland compositor; not recommended for daily use
+Exec=@SESSION_EXEC@
+TryExec=@BINARY_PATH@
+Type=Application
+Keywords=tiling;wayland;compositor;

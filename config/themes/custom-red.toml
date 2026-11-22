@@ -1,0 +1,24 @@
+# Copy to themes/ beside your main config. Activate with: emberwm ctl theme custom-red
+# This file can style the desktop and native panels/popups without changing app bindings.
+[theme]
+background = "#180c12"
+active_border = "#ef5675"
+inactive_border = "#512333"
+selection = "#ff8199"
+border_width = 2
+# Preserve the current wallpaper and framing when cycling colours.
+# Set wallpaper = "" explicitly here for a solid background.
+# Example native image, resolved relative to THIS preset:
+# wallpaper = "/path/to/Pictures/wallpaper.jpg"
+
+[panels]
+font = "builtin"
+font_size = 12.0
+background = "#25131b"
+foreground = "#f5dce4"
+accent = "#ef5675"
+border_color = "#512333"
+opacity = 0.96
+
+[layout]
+gap = 10
