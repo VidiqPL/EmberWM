@@ -96,6 +96,8 @@ The current development snapshot passed 46 unit tests (two opt-in tests ignored)
 and targeted native virtual-seat checks. That does **not** establish suitability
 for daily use or universal application/hardware support. Optional integration
 tests need additional tools; see [testing notes](docs/TESTING.md).
+The X11 workspace input regression and its scope are documented in
+[docs/X11_INPUT.md](docs/X11_INPUT.md).
 
 No release/publishing workflow is provided. Bugs and incomplete behavior are
 expected; source-level experimentation is the purpose of this repository.

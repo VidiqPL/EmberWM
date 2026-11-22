@@ -9,6 +9,20 @@
 int main(int argc,char **argv) {
     Display *d=XOpenDisplay(NULL);if(!d){fputs("XOpenDisplay failed\n",stderr);return 2;}
     int screen=DefaultScreen(d);
+    if(argc>2&&!strcmp(argv[1],"hit-test")){
+        Window frame=strtoul(argv[2],NULL,0),root=RootWindow(d,screen),parent,*children;unsigned count;
+        for(;;){
+            Window tree_root;
+            if(!XQueryTree(d,frame,&tree_root,&parent,&children,&count))return 3;
+            if(children)XFree(children);
+            if(parent==root||parent==None)break;
+            frame=parent;
+        }
+        Window pointer_root,child;int rx,ry,wx,wy;unsigned mask;
+        XQueryPointer(d,root,&pointer_root,&child,&rx,&ry,&wx,&wy,&mask);
+        printf("{\"hit\":%s,\"frame\":%lu,\"child\":%lu}\n",child==frame?"true":"false",frame,child);
+        XCloseDisplay(d);return 0;
+    }
     if(argc>1&&!strcmp(argv[1],"focus-state")){
         Window focus;int revert;XGetInputFocus(d,&focus,&revert);
         printf("{\"focus\":%lu}\n",focus);XCloseDisplay(d);return 0;

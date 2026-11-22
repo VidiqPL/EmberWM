@@ -253,14 +253,7 @@ impl Ember {
                 }
                 // Reconcile pointer focus before delivering a wheel event: a new
                 // popup can appear without any physical mouse movement.
-                let pointer = self.seat.get_pointer().unwrap();
-                let under = self.surface_under(pointer.current_location());
-                if !pointer.is_grabbed()
-                    && !self.pointer_locked()
-                    && pointer.current_focus().as_ref() != under.as_ref().map(|(s, _)| s)
-                {
-                    self.pointer_motion(pointer.current_location(), event.time_msec());
-                }
+                self.refresh_pointer_focus(event.time_msec());
                 let source = event.source();
 
                 let horizontal_amount = event.amount(Axis::Horizontal).unwrap_or_else(|| {
@@ -365,19 +358,7 @@ impl Ember {
             }
             self.relayout();
         }
-        let under = if self.draw.is_some()
-            || self.drag.is_some()
-            || self.panels.contains(pos)
-            || self.ui.contains(pos)
-            || self.wifi.open
-            || self.tray.open
-            || self.launcher.open
-            || self.screencast.prompt_open()
-        {
-            None
-        } else {
-            self.surface_under(pos)
-        };
+        let under = self.pointer_target(pos);
 
         pointer.motion(
             self,
@@ -391,7 +372,42 @@ impl Ember {
         pointer.frame(self);
         self.sync_pointer_capture();
     }
+
+    fn pointer_target(
+        &self,
+        pos: smithay::utils::Point<f64, smithay::utils::Logical>,
+    ) -> Option<(
+        smithay::reexports::wayland_server::protocol::wl_surface::WlSurface,
+        smithay::utils::Point<f64, smithay::utils::Logical>,
+    )> {
+        if self.draw.is_some()
+            || self.drag.is_some()
+            || self.panels.contains(pos)
+            || self.ui.contains(pos)
+            || self.wifi.open
+            || self.tray.open
+            || self.launcher.open
+            || self.screencast.prompt_open()
+        {
+            None
+        } else {
+            self.surface_under(pos)
+        }
+    }
+
+    pub(crate) fn refresh_pointer_focus(&mut self, time: u32) {
+        let pointer = self.seat.get_pointer().unwrap();
+        if pointer.is_grabbed() || self.pointer_locked() {
+            return;
+        }
+        let pos = pointer.current_location();
+        let under = self.pointer_target(pos);
+        if pointer.current_focus().as_ref() != under.as_ref().map(|(s, _)| s) {
+            self.pointer_motion(pos, time);
+        }
+    }
     pub(crate) fn pointer_button(&mut self, button: u32, button_state: ButtonState, time: u32) {
+        self.refresh_pointer_focus(time);
         let pointer = self.seat.get_pointer().unwrap();
         let keyboard = self.seat.get_keyboard().unwrap();
 

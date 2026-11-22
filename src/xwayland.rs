@@ -222,6 +222,28 @@ pub fn maintenance(data: &mut CalloopData, handle: LoopHandle<'static, CalloopDa
         Some(std::time::Instant::now() + std::time::Duration::from_millis(delay));
 }
 impl Ember {
+    pub fn sync_x11_stacking(&mut self) {
+        // X11 hit testing uses its own frame stack, even for windows hidden by
+        // our workspace policy. Keep hidden clients below the visible Space.
+        let order: Vec<_> = self
+            .windows
+            .iter()
+            .filter(|m| self.space.element_location(&m.window).is_none())
+            .filter_map(|m| m.window.x11_surface().cloned())
+            .chain(
+                self.space
+                    .elements()
+                    .filter_map(|w| w.x11_surface().cloned()),
+            )
+            .collect();
+        if let Some(wm) = &mut self.xwayland.wm {
+            // Smithay's downward pass places each next frame BELOW its predecessor.
+            if let Err(error) = wm.update_stacking_order_downwards(order.iter().rev()) {
+                tracing::warn!(%error, "could not synchronize X11 stacking");
+            }
+        }
+    }
+
     pub fn x11_offer(&mut self, mimes: Option<Vec<String>>) {
         self.xwayland.offered = mimes.clone();
         if let Some(wm) = &mut self.xwayland.wm {
@@ -357,6 +379,11 @@ impl XwmHandler for Ember {
         if window.set_mapped(true).is_ok() {
             self.map_x11(window);
         }
+    }
+    fn map_window_notify(&mut self, _: XwmId, _: X11Surface) {
+        // MapNotify adds the client to XWM's internal stacking list after the
+        // map request callback, so synchronize again once it is registered.
+        self.sync_x11_stacking();
     }
     fn mapped_override_redirect_window(&mut self, _: XwmId, window: X11Surface) {
         self.map_x11(window);
@@ -562,6 +589,9 @@ impl XwmHandler for CalloopData {
     }
     fn map_window_request(&mut self, id: XwmId, w: X11Surface) {
         self.state.map_window_request(id, w)
+    }
+    fn map_window_notify(&mut self, id: XwmId, w: X11Surface) {
+        self.state.map_window_notify(id, w)
     }
     fn mapped_override_redirect_window(&mut self, id: XwmId, w: X11Surface) {
         self.state.mapped_override_redirect_window(id, w)

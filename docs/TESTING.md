@@ -51,3 +51,8 @@ Some historical baseline switches require separately built older binaries;
 those binaries are deliberately not published. The personal microphone/PTT
 script and its local integration test are not included. No release workflow,
 compiled fixture or prebuilt compositor is distributed.
+
+## X11 workspace input regression
+
+See [X11_INPUT.md](X11_INPUT.md) for the live-game frame-order regression,
+its native virtual-seat test commands, and the exact scope of validation.

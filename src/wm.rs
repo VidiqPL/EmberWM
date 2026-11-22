@@ -370,6 +370,8 @@ impl Ember {
         if let Some(keyboard) = self.seat.get_keyboard() {
             keyboard.set_focus(self, surface, SERIAL_COUNTER.next_serial());
         }
+        self.sync_x11_stacking();
+        self.refresh_pointer_focus(self.start_time.elapsed().as_millis() as u32);
         self.dirty = true;
     }
     pub fn relayout(&mut self) {
@@ -483,6 +485,7 @@ impl Ember {
             }
         }
         self.raise_scratchpad();
+        self.sync_x11_stacking();
         self.dirty = true;
     }
     pub fn maintenance(&mut self) {

@@ -14,7 +14,7 @@ static const struct zwp_relative_pointer_v1_listener relative_listener={motion_r
 static void p_enter(void*d,struct wl_pointer*p,uint32_t serial,struct wl_surface*s,wl_fixed_t x,wl_fixed_t y){(void)d;(void)s;wl_pointer_set_cursor(p,serial,NULL,0,0);printf("{\"event\":\"pointer-enter\",\"x\":%.3f,\"y\":%.3f}\n",wl_fixed_to_double(x),wl_fixed_to_double(y));fflush(stdout);}
 static void p_leave(void*d,struct wl_pointer*p,uint32_t serial,struct wl_surface*s){(void)d;(void)p;(void)serial;(void)s;puts("{\"event\":\"pointer-leave\"}");fflush(stdout);}
 static void p_motion(void*d,struct wl_pointer*p,uint32_t time,wl_fixed_t x,wl_fixed_t y){(void)d;(void)p;(void)time;printf("{\"event\":\"pointer-motion\",\"x\":%.3f,\"y\":%.3f}\n",wl_fixed_to_double(x),wl_fixed_to_double(y));fflush(stdout);}
-static void p_button(void*d,struct wl_pointer*p,uint32_t s,uint32_t t,uint32_t b,uint32_t state){if(state==WL_POINTER_BUTTON_STATE_PRESSED)pointer_button_serial=s;(void)d;(void)p;(void)s;(void)t;(void)b;(void)state;}
+static void p_button(void*d,struct wl_pointer*p,uint32_t s,uint32_t t,uint32_t b,uint32_t state){if(state==WL_POINTER_BUTTON_STATE_PRESSED)pointer_button_serial=s;printf("{\"event\":\"pointer-button\",\"button\":%u,\"state\":%u}\n",b,state);fflush(stdout);(void)d;(void)p;(void)s;(void)t;(void)b;(void)state;}
 static void p_axis(void*d,struct wl_pointer*p,uint32_t t,uint32_t axis,wl_fixed_t v){(void)d;(void)p;(void)t;printf("{\"event\":\"pointer-axis\",\"axis\":%u,\"value\":%.3f}\n",axis,wl_fixed_to_double(v));fflush(stdout);}
 static void p_frame(void*d,struct wl_pointer*p){(void)d;(void)p;}
 static void p_axis_source(void*d,struct wl_pointer*p,uint32_t source){(void)d;(void)p;(void)source;}
