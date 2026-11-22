@@ -1,0 +1,65 @@
+#!/usr/bin/python3 -I
+"""Root-owned, fixed-purpose CPU preference helper. No commands or paths from callers."""
+import json
+import os
+from pathlib import Path
+import sys
+
+SYSFS = Path('/sys/devices/system/cpu/cpufreq')
+PROFILES = {
+    'performance': ('performance', 'performance'),
+    'balanced': ('powersave', 'balance_performance'),
+    'power-saver': ('powersave', 'power'),
+}
+
+
+def apply_profile(profile, root=SYSFS):
+    if profile not in PROFILES:
+        raise ValueError('Expected performance, balanced or power-saver')
+    governor, preference = PROFILES[profile]
+    policies = sorted(root.glob('policy[0-9]*'))
+    if not policies:
+        raise RuntimeError('No CPU frequency policies found')
+    saved = []
+    # Validate every policy before changing any of them.
+    for policy in policies:
+        def read(name):
+            return (policy / name).read_text().strip()
+        if governor not in read('scaling_available_governors').split():
+            raise RuntimeError(f'{policy.name}: governor is unsupported')
+        if preference not in read('energy_performance_available_preferences').split():
+            raise RuntimeError(f'{policy.name}: energy preference is unsupported')
+        saved.append((policy, read('scaling_governor'), read('energy_performance_preference')))
+    changed = []
+    try:
+        for policy, old_governor, old_preference in saved:
+            changed.append((policy, old_governor, old_preference))
+            (policy / 'scaling_governor').write_text(governor)
+            (policy / 'energy_performance_preference').write_text(preference)
+    except OSError as error:
+        failures = []
+        for policy, old_governor, old_preference in reversed(changed):
+            try:
+                (policy / 'scaling_governor').write_text(old_governor)
+                (policy / 'energy_performance_preference').write_text(old_preference)
+            except OSError:
+                failures.append(policy.name)
+        suffix = f'; rollback failed for {", ".join(failures)}' if failures else '; previous settings restored'
+        raise RuntimeError(str(error) + suffix) from error
+    return {'profile': profile, 'policies': len(saved)}
+
+
+def main():
+    if len(sys.argv) != 2 or sys.argv[1] not in PROFILES:
+        raise ValueError('Usage: emberwm-power performance|balanced|power-saver')
+    if os.geteuid() != 0:
+        raise PermissionError('This helper requires authorization through pkexec')
+    print(json.dumps(apply_profile(sys.argv[1])))
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except (ValueError, OSError, RuntimeError) as error:
+        print(str(error), file=sys.stderr)
+        sys.exit(1)

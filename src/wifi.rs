@@ -163,6 +163,7 @@ struct Button {
 
 #[derive(Default)]
 pub struct Runtime {
+    viewport: Option<Rect>,
     pub open: bool,
     pub view: Option<ui::View>,
     snapshot: Snapshot,
@@ -211,6 +212,9 @@ impl Runtime {
         }
         self.revision += 1;
         crate::memory::request_reclaim();
+    }
+    pub fn has_selection(&self) -> bool {
+        self.selected.is_some()
     }
     pub fn busy(&self) -> bool {
         self.job.is_some()
@@ -457,6 +461,7 @@ impl Runtime {
     pub fn status(&self) -> serde_json::Value {
         serde_json::json!({"open":self.open,"busy":self.busy(),"networks":self.snapshot.networks,"devices":self.snapshot.devices,"radio_enabled":self.snapshot.radio,"selected":self.selected,"cursor":self.cursor,"password_entered":!self.password.is_empty(),"message":self.message,"failed":self.failed,"font_loaded":self.font.is_some(),"buffer_bytes":self.view.as_ref().map_or(0,|v|v.rect.size.w as u64*v.rect.size.h as u64*4),"rasterizations":self.rasterizations,"view":self.view.as_ref().map(|v|serde_json::json!({"x":v.rect.loc.x,"y":v.rect.loc.y,"width":v.rect.size.w,"height":v.rect.size.h})),"buttons":self.buttons.iter().map(|b|serde_json::json!({"action":match b.hit {Hit::Close=>"close",Hit::Refresh=>"refresh",Hit::Back=>"back",Hit::Activate=>"activate",Hit::Select(_)=>"select"},"index":match b.hit { Hit::Select(n)=>Some(n),_=>None },"x":b.rect.loc.x,"y":b.rect.loc.y,"width":b.rect.size.w,"height":b.rect.size.h})).collect::<Vec<_>>()})
     }
+    #[cfg(test)]
     pub fn update(
         &mut self,
         config: &Config,
@@ -464,6 +469,20 @@ impl Runtime {
         generation: u64,
         size: Size<i32, Logical>,
     ) -> bool {
+        self.update_in(config, path, generation, size, None)
+    }
+    pub fn update_in(
+        &mut self,
+        config: &Config,
+        path: &Path,
+        generation: u64,
+        size: Size<i32, Logical>,
+        viewport: Option<Rect>,
+    ) -> bool {
+        if self.viewport != viewport {
+            self.viewport = viewport;
+            self.render_key = None;
+        }
         let revision = self.revision;
         self.poll();
         if !config.wifi.enabled && self.open {
@@ -493,8 +512,10 @@ impl Runtime {
         let px = config.wifi.font_size;
         let line = px.ceil() as i32 + 8;
         let row = line + 22;
-        let width = config.wifi.width.min((size.w - 32).max(1));
-        let max_height = (size.h - 32).max(1);
+        let width = self
+            .viewport
+            .map_or_else(|| config.wifi.width.min((size.w - 32).max(1)), |r| r.size.w);
+        let max_height = self.viewport.map_or((size.h - 32).max(1), |r| r.size.h);
         let rows = ((max_height - 170) / row).clamp(1, 8) as usize;
         self.visible_rows = rows;
         let height = if self.selected.is_some() {
@@ -503,10 +524,13 @@ impl Runtime {
             170 + row * self.snapshot.networks.len().clamp(1, rows) as i32
         }
         .min(max_height);
-        let rect = Rectangle::new(
-            ((size.w - width) / 2, (size.h - height) / 2).into(),
-            (width, height).into(),
-        );
+        let height = self.viewport.map_or(height, |r| r.size.h);
+        let rect = self.viewport.unwrap_or_else(|| {
+            Rectangle::new(
+                ((size.w - width) / 2, (size.h - height) / 2).into(),
+                (width, height).into(),
+            )
+        });
         let fg = color(&config.panels.foreground).unwrap();
         let bg = color(&config.panels.background).unwrap();
         let accent = color(&config.panels.accent).unwrap();
@@ -549,7 +573,9 @@ impl Runtime {
                     hit,
                 });
             };
-            button(pixels, Hit::Close, "×", width - 40, 10, 28, 30);
+            if self.viewport.is_none() {
+                button(pixels, Hit::Close, "×", width - 40, 10, 28, 30);
+            }
             if let Some(n) = &self.selected {
                 ui::text(
                     pixels,

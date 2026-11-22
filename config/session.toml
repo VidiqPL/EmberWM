@@ -21,6 +21,14 @@ terminal = [
     "background_opacity=1.0",
 ]
 
+# Native control center. Remove/reorder tabs here.
+[menu]
+enabled = true
+title = "EmberWM"
+width = 640
+height = 620
+tabs = ["wifi", "tray", "power"]
+
 [xwayland]
 scroll_factor = 1.0
 # Start X11 compatibility only when an X11 app or clipboard client connects.
@@ -332,7 +340,7 @@ font_size = 13.0
 
 [[bindings]]
 key = "period"
-action = "wifi-toggle"
+action = "menu-toggle"
 
 [launcher]
 enabled = true

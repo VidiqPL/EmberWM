@@ -12,10 +12,12 @@ mod ipc;
 mod launcher;
 mod layout;
 mod memory;
+mod menu;
 mod mouse;
 mod native;
 mod notifications;
 mod panels;
+mod power;
 mod render;
 mod rice;
 mod rules;
@@ -236,21 +238,47 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             data.state.theme_generation,
             ui_size,
         );
-        let wifi_changed = data.state.wifi.update(
+        let menu_changed = data.state.update_menu(ui_size);
+        let viewport = data.state.menu.body;
+        let wifi_changed = data.state.wifi.update_in(
             &data.state.config,
             &data.state.config_path,
             data.state.theme_generation,
             ui_size,
+            viewport,
         );
         data.state
             .tray
             .maintain(data.state.config.tray.enabled, event_loop.handle());
-        let tray_changed = data.state.tray.update(
+        let tray_changed = data.state.tray.update_in(
             &data.state.config,
             &data.state.config_path,
             data.state.theme_generation,
             ui_size,
+            viewport,
         );
+        let power_changed = data.state.power.update(
+            &data.state.config,
+            &data.state.config_path,
+            data.state.theme_generation,
+            viewport,
+        );
+        if let Some(message) = data.state.power.take_feedback() {
+            data.state.notifications.notify(
+                &data.state.config.notifications,
+                notifications::Request {
+                    app: "Ember power",
+                    replaces: 0,
+                    summary: "Power controls",
+                    body: &message,
+                    actions: vec![],
+                    urgency: 1,
+                    resident: false,
+                    timeout: -1,
+                    sender: None,
+                },
+            );
+        }
         let volume_changed = data.state.volume.update(
             &data.state.config,
             &data.state.config_path,
@@ -276,7 +304,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         } else {
             data.state.panels.disable()
         };
-        if tray_changed
+        if menu_changed
+            || power_changed
+            || tray_changed
             || volume_changed
             || panels_changed
             || ui_changed
@@ -330,7 +360,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         if let Some(wake) = data.state.screencast.next_wake() {
             timeout = timeout.min(wake);
         }
-        if data.state.tray.busy()
+        if let Some(wake) = data.state.power.wake() {
+            timeout = timeout.min(wake);
+        }
+        if data.state.power.busy()
+            || data.state.tray.busy()
             || data.state.volume.busy()
             || data.state.wifi.busy()
             || data.state.launcher.busy()

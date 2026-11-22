@@ -81,6 +81,23 @@ impl Ember {
                             state.suppressed_keys.insert(code);
                             return FilterResult::Intercept(String::new());
                         }
+                        if state.menu.open {
+                            match state.config.action(mods, sym).as_deref() {
+                                Some("menu-toggle") | Some("wifi-toggle") => state.toggle_menu(),
+                                Some("tray-toggle") => {
+                                    if state.menu.tab == crate::menu::Tab::Tray {
+                                        state.close_menu();
+                                    } else {
+                                        state.select_menu(crate::menu::Tab::Tray);
+                                    }
+                                }
+                                Some("power-toggle") => state.select_menu(crate::menu::Tab::Power),
+                                _ => state.menu_key(sym, key.modified_sym(), mods),
+                            }
+                            state.dirty = true;
+                            state.suppressed_keys.insert(code);
+                            return FilterResult::Intercept(String::new());
+                        }
                         if state.tray.open {
                             if state.config.action(mods, sym).as_deref() == Some("tray-toggle") {
                                 state.tray.close();
@@ -182,6 +199,21 @@ impl Ember {
                     if amount != 0. {
                         self.screencast.select_source(amount > 0.);
                         self.dirty = true;
+                    }
+                    return;
+                }
+                if self.menu.open
+                    && (self.menu.tab == crate::menu::Tab::Power
+                        || self.menu.body.is_none_or(|r| !r.to_f64().contains(pos)))
+                {
+                    if self.menu.tab == crate::menu::Tab::Power {
+                        let amount = event
+                            .amount(Axis::Vertical)
+                            .unwrap_or_else(|| event.amount_v120(Axis::Vertical).unwrap_or(0.));
+                        if amount != 0. {
+                            self.power.scroll(amount > 0.);
+                            self.dirty = true;
+                        }
                     }
                     return;
                 }
@@ -384,6 +416,7 @@ impl Ember {
             || self.drag.is_some()
             || self.panels.contains(pos)
             || self.ui.contains(pos)
+            || self.menu.open
             || self.wifi.open
             || self.tray.open
             || self.launcher.open
@@ -444,6 +477,15 @@ impl Ember {
         {
             self.drag = None;
             self.dirty = true;
+            return;
+        }
+        if self.menu.open {
+            if button_state == ButtonState::Pressed {
+                self.suppressed_buttons.insert(button);
+                if button == 0x110 || button == 0x111 {
+                    self.menu_click(pointer.current_location(), button == 0x111);
+                }
+            }
             return;
         }
         if self.tray.open {

@@ -61,6 +61,9 @@ try:
  wait(lambda:ctl('status')['pointer_locked'])
  assert next(w for w in ctl('status')['windows']if w['app_id']=='mouse-test')['focused']
  passed.append('Persistent capture resumes after leaving and returning to the game workspace with an overlay; no Insert toggles required')
+ ctl('menu-toggle');wait(lambda:ctl('status')['menu']['open']);assert not ctl('status')['pointer_locked']
+ ctl('menu-toggle');wait(lambda:not ctl('status')['menu']['open']);move(1,1);wait(lambda:ctl('status')['pointer_locked'])
+ passed.append('Control center releases game capture while open and restores persistent capture after closing')
  guest(xenv+' ember-x11-window menu >/tmp/menu-fixture.log 2>&1 & echo $! >/tmp/menu-fixture.pid')
  menu=wait(lambda:next((w for w in ctl('status')['windows']if w['app_id']=='LinusWare'),None));assert menu['floating']and menu['geometry']['width']==420 and menu['geometry']['height']==260,menu
  assert next(w for w in ctl('status')['windows']if w['app_id']=='mouse-test')['fullscreen']

@@ -1,5 +1,7 @@
 # Desktop controls in 0.15
 
+Since 0.16.0, Wi-Fi and tray controls share the [EmberWM control center](CONTROL_CENTER.md). Super+`.` opens it; Super+`,` opens its Tray tab. Shared dimensions and visible tabs are configured under `[menu]`.
+
 Volume up/down and mute show a native bar, thumb and percentage for one second.
 A bounded queue preserves repeated key presses; one temporary worker applies the
 wpctl command and reads the resulting volume. The expiry restarts after the

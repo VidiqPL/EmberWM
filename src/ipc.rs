@@ -46,7 +46,7 @@ impl Ember {
         let mode = self.space.outputs().next().and_then(|o| o.current_mode());
         json!({"version":env!("CARGO_PKG_VERSION"), "backend":self.backend_name, "session_active":self.session_active, "pid":std::process::id(),"keyboard_focus_app":self.seat.get_keyboard().and_then(|k|k.current_focus()).and_then(|s|self.windows.iter().find(|w|crate::wm::has_surface(&w.window,&s)).map(|w|crate::wm::metadata(&w.window).0)),
             "pointer":{"x":pointer.x,"y":pointer.y}, "pointer_grabbed":self.seat.get_pointer().unwrap().is_grabbed(), "pointer_buttons":self.seat.get_pointer().unwrap().pressed_buttons(), "wayland_display":self.socket_name.to_string_lossy(), "ipc_socket":self.ipc_path(), "workspace":self.workspace+1,"workspace_count":self.config.layout.workspaces,"xwayland":self.xwayland.status(),
-            "output":{"width":size.w,"height":size.h,"refresh_hz":mode.map(|m|f64::from(m.refresh)/1000.0)}, "audio":self.audio_status,"tray":self.tray.status(),"volume_osd":{"visible":self.volume.view.is_some(),"busy":self.volume.busy(),"error":self.volume.error}, "panels":self.panels.status(), "notifications":self.notifications.status(), "ui":self.ui.status(), "wifi":self.wifi.status(), "windows":windows,"scratchpad":{"visible":self.scratchpad.visible,"windows":self.windows.iter().filter(|m|m.scratchpad.is_some()).count()},
+            "output":{"width":size.w,"height":size.h,"refresh_hz":mode.map(|m|f64::from(m.refresh)/1000.0)}, "menu":self.menu.status(),"power":self.power.status(),"audio":self.audio_status,"tray":self.tray.status(),"volume_osd":{"visible":self.volume.view.is_some(),"busy":self.volume.busy(),"error":self.volume.error}, "panels":self.panels.status(), "notifications":self.notifications.status(), "ui":self.ui.status(), "wifi":self.wifi.status(), "windows":windows,"scratchpad":{"visible":self.scratchpad.visible,"windows":self.windows.iter().filter(|m|m.scratchpad.is_some()).count()},
             "draw_armed":self.draw.is_some(), "screenshot_armed":self.draw.as_ref().is_some_and(|d|d.screenshot), "clipboard":self.clipboard.status(), "pending_draws":self.pending_draws.len(), "frames_submitted":self.frames_submitted,
             "theme_generation":self.theme_generation, "config":self.config_path,"launcher":self.launcher.status(),"image_capture":{"pending":self.image_capture.pending(),"frames":self.image_capture.frames,"failures":self.image_capture.failures},"pointer_locked":self.pointer_locked(),"screencast":self.screencast.status()})
     }
@@ -79,6 +79,8 @@ impl Ember {
                 self.notifications.invoke(id, key);
                 self.dirty = true;
             }
+            "menu" => return Ok(self.menu.status()),
+            "power" => return Ok(self.power.status()),
             "wifi" => return Ok(self.wifi.status()),
             "launcher" => return Ok(self.launcher.status()),
             "screencast" => return Ok(self.screencast.status()),
@@ -88,7 +90,7 @@ impl Ember {
                 }
                 let output = self.space.outputs().next().ok_or("no display")?.name();
                 self.launcher.close();
-                self.wifi.close();
+                self.close_menu();
                 self.ui.close();
                 self.draw = None;
                 self.drag = None;

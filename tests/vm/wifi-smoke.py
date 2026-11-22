@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Native KMS/libinput popup test. Only virtual guest devices and fake Wi-Fi data."""
-import json,re,shlex,time
+import json,re,shlex,time,tomllib
 from pathlib import Path
 from control import shell,qmp,WORK
 ROOT=Path(__file__).resolve().parents[2]
@@ -46,7 +46,7 @@ try:
     # Let the client see F11 outside the modal, to check modal key suppression.
     guest("sed -i 's/key = \"F11\"/key = \"F12\"/' /tmp/wifi-config.toml")
     guest('PATH=/tmp/wifi-bin:$PATH DBUS_SYSTEM_BUS_ADDRESS="$DBUS_SESSION_BUS_ADDRESS" emberwm --native --config /tmp/wifi-config.toml >/tmp/ember-wifi.log 2>&1 &')
-    wait(lambda:ctl('status')['version']=='0.9.0')
+    wait(lambda:ctl('status')['version']==tomllib.loads((ROOT/'Cargo.toml').read_text())['package']['version'])
     display=ctl('status')['wayland_display']
     guest(f'WAYLAND_DISPLAY={shlex.quote(display)} ember-wm-client --app-id wifi-input-test --log-keys >/tmp/wifi-client.log 2>&1 &');wait(lambda:len(ctl('status')['windows'])==1)
     key('meta_l','dot');s=wait(ready);assert s['networks'][1]['ssid']=='Cafe: guest'

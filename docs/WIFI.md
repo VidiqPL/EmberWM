@@ -1,5 +1,7 @@
 # Native Wi-Fi controls
 
+Since 0.16.0, Wi-Fi and tray controls share the [EmberWM control center](CONTROL_CENTER.md). Super+`.` opens it; Super+`,` opens its Tray tab. Shared dimensions and visible tabs are configured under `[menu]`.
+
 **Super+.** opens Wi-Fi controls in the standalone session. The nested default
 is **Alt+.**. The popup uses the same native drawing and panel theme as the help
 sheet. No separate application or permanent Wi-Fi UI daemon is launched.

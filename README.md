@@ -31,6 +31,8 @@ cargo build --release --locked
 
 ## Implemented features
 
+- [Native control center](docs/CONTROL_CENTER.md) with Wi-Fi, tray menus, CPU power preferences and confirmed session actions.
+
 - Keyboard-driven tiling/floating windows, ten workspaces, window rules and F11 fullscreen.
 - Draw a rectangle to launch a terminal; mark and hide/show scratchpad windows.
 - Configurable colours, rice profiles, panels and native PNG/JPEG wallpapers.
@@ -73,7 +75,7 @@ The standalone modifier is **Super**; the shipped nested config uses **Alt**.
 | Mod+Shift+G / Mod+G | Mark scratchpad / hide or show it |
 | Mod+Shift+S | Select screenshot region |
 | Mod+/ | Shortcut sheet |
-| Mod+. / Mod+, | Wi-Fi / tray menu |
+| Mod+. / Mod+, | Control center / Tray tab |
 | Mod+T / Mod+Shift+T | Theme / rice profile |
 | Mod+R | Reload config |
 | Mod+Escape | Release mouse capture |
@@ -92,8 +94,7 @@ cargo fmt --all --check
 ./target/release/emberwm --check-config --config config/session.toml
 ```
 
-The current development snapshot passed 46 unit tests (two opt-in tests ignored)
-and targeted native virtual-seat checks. That does **not** establish suitability
+Development checks include Rust unit tests and targeted native virtual-seat checks. That does **not** establish suitability
 for daily use or universal application/hardware support. Optional integration
 tests need additional tools; see [testing notes](docs/TESTING.md).
 The X11 workspace input regression and its scope are documented in

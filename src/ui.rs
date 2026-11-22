@@ -42,6 +42,7 @@ impl ShortcutSettings {
 pub fn validate_resources(config: &Config, path: &Path) -> Result<(), String> {
     if (config.shortcuts.enabled
         || config.notifications.enabled
+        || config.menu.enabled
         || config.wifi.enabled
         || config.launcher.enabled
         || config.tray.enabled
@@ -129,7 +130,9 @@ fn describe(action: &str) -> String {
         "rules-apply" => "Reapply window rules",
         "panels-toggle" => "Toggle panels",
         "shortcuts-toggle" => "Toggle shortcut sheet",
-        "wifi-toggle" => "Toggle Wi-Fi controls",
+        "menu-toggle" => "EmberWM control center",
+        "power-toggle" => "Power and session controls",
+        "wifi-toggle" => "EmberWM control center",
         "tray-toggle" => "Tray apps and context menus",
         "pointer-release" => "Release game mouse capture",
         "rice-cycle" => "Cycle rice profile",
@@ -732,6 +735,7 @@ mod tests {
         assert!(validate_resources(&config, Path::new("/tmp/config.toml")).is_err());
         config.tray.enabled = false;
         config.audio.osd_enabled = false;
+        config.menu.enabled = false;
         assert!(validate_resources(&config, Path::new("/tmp/config.toml")).is_ok());
     }
     #[test]

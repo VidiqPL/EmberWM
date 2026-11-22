@@ -195,6 +195,7 @@ impl Scene {
                 }
             } else if state.panels.contains(pos)
                 || state.ui.contains(pos)
+                || state.menu.open
                 || state.wifi.open
                 || state.tray.open
                 || state.launcher.open
@@ -277,6 +278,8 @@ impl Scene {
             .view
             .iter()
             .chain(state.launcher.view.iter())
+            .chain(state.menu.view.iter())
+            .chain(state.power.view.iter())
             .chain(state.wifi.view.iter())
             .chain(state.tray.view.iter())
             .chain(state.volume.view.iter())

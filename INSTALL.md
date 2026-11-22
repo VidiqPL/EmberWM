@@ -163,3 +163,10 @@ rm -f ~/.local/share/xdg-desktop-portal/portals/ember.portal
 ```
 
 Do not delete a checkout while an installed session entry still points at it.
+
+## Optional CPU profile controls
+
+The control center works without a power daemon. To enable its CPU preference
+buttons, install the fixed-purpose root-owned helper with
+`sudo sh scripts/install-power-helper.sh`. See [CONTROL_CENTER.md](docs/CONTROL_CENTER.md)
+for authorization, supported hardware and resource behavior.

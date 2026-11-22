@@ -12,6 +12,7 @@ pub struct Config {
     pub rice: crate::rice::Settings,
     pub screencast: crate::screencast::Settings,
     pub launcher: crate::launcher::Settings,
+    pub menu: crate::menu::Settings,
     pub tray: crate::tray::Settings,
     pub wifi: crate::wifi::Settings,
     pub panels: crate::panels::Settings,
@@ -156,7 +157,7 @@ impl Default for Config {
             Binding::new("f", "fullscreen"),
             Binding::new("b", "panels-toggle"),
             Binding::new("slash", "shortcuts-toggle"),
-            Binding::new("period", "wifi-toggle"),
+            Binding::new("period", "menu-toggle"),
             Binding::new("comma", "tray-toggle"),
             Binding::new("n", "notification-dismiss"),
         ];
@@ -232,6 +233,7 @@ impl Default for Config {
             rice: crate::rice::Settings::default(),
             screencast: crate::screencast::Settings::default(),
             launcher: crate::launcher::Settings::default(),
+            menu: Default::default(),
             tray: Default::default(),
             wifi: crate::wifi::Settings::default(),
             panels: crate::panels::Settings::default(),
@@ -311,6 +313,8 @@ pub fn valid_action(action: &str) -> bool {
         | "mic-mute"
         | "panels-toggle"
         | "shortcuts-toggle"
+        | "menu-toggle"
+        | "power-toggle"
         | "tray-toggle"
         | "wifi-toggle"
         | "launcher-toggle"
@@ -376,6 +380,7 @@ impl Config {
         if !(100..=10000).contains(&self.audio.osd_duration_ms) {
             return Err("Audio OSD duration must be between 100 and 10000 ms".into());
         }
+        self.menu.validate()?;
         self.tray.validate()?;
         self.wifi.validate()?;
         self.launcher.validate()?;
@@ -538,7 +543,7 @@ mod tests {
         };
         assert_eq!(
             config.action(&mods, Keysym::period).as_deref(),
-            Some("wifi-toggle")
+            Some("menu-toggle")
         );
         config.wifi.width = 0;
         assert!(config.validate().is_err());

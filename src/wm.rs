@@ -647,7 +647,7 @@ impl Ember {
                 self.launcher.close();
                 self.tray.close();
                 self.ui.close();
-                self.wifi.close();
+                self.close_menu();
                 self.arm_draw();
                 self.draw.as_mut().unwrap().screenshot = true;
             }
@@ -671,36 +671,30 @@ impl Ember {
                 if self.config.shortcuts.enabled {
                     self.tray.close();
                     self.launcher.close();
-                    self.wifi.close();
+                    self.close_menu();
                     self.ui.toggle();
                 }
             }
+            "menu-toggle" | "wifi-toggle" => self.toggle_menu(),
             "tray-toggle" => {
-                if !self.config.tray.enabled {
-                    return Ok(());
+                if self.menu.open && self.menu.tab == crate::menu::Tab::Tray {
+                    self.close_menu();
+                } else {
+                    self.select_menu(crate::menu::Tab::Tray);
                 }
-                self.launcher.close();
-                self.wifi.close();
-                self.ui.close();
-                self.draw = None;
-                self.drag = None;
-                self.tray.toggle();
             }
-            "wifi-toggle" => {
-                if self.config.wifi.enabled {
-                    self.launcher.close();
-                    self.tray.close();
-                    self.ui.close();
-                    self.draw = None;
-                    self.drag = None;
-                    self.wifi.toggle();
+            "power-toggle" => {
+                if self.menu.open && self.menu.tab == crate::menu::Tab::Power {
+                    self.close_menu();
+                } else {
+                    self.select_menu(crate::menu::Tab::Power);
                 }
             }
             "launcher-toggle" => {
                 if self.config.launcher.enabled {
                     self.tray.close();
                     self.ui.close();
-                    self.wifi.close();
+                    self.close_menu();
                     self.draw = None;
                     self.drag = None;
                     self.launcher.toggle();

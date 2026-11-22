@@ -10,7 +10,7 @@ use std::{
 const LIMIT: usize = 65536;
 const BUILTINS: [&str; 3] = ["red-dusk", "midnight", "minimal"];
 // Services, keybindings, workspace policies and notification delivery are deliberately outside a rice.
-const FIELDS: [(&str, &[&str]); 7] = [
+const FIELDS: [(&str, &[&str]); 8] = [
     (
         "theme",
         &[
@@ -54,6 +54,7 @@ const FIELDS: [(&str, &[&str]); 7] = [
         "notifications",
         &["width", "margin", "gap", "compact", "respect_panel_space"],
     ),
+    ("menu", &["title", "width", "height"]),
     ("wifi", &["width", "font_size"]),
     ("launcher", &["width", "font_size", "rows"]),
 ];

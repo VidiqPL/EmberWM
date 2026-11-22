@@ -36,9 +36,9 @@ with tempfile.TemporaryDirectory(prefix='ember-wifi-ui-') as directory:
         raster=s['rasterizations'];time.sleep(.4);assert wifi()['rasterizations']==raster
         shot=ROOT/'docs/wifi-preview.png';ctl('screenshot '+str(shot));wait(lambda:shot.exists())
         passed.append('Real nested popup renders parsed networks and caches unchanged pixels')
-        ctl('shortcuts-toggle');wait(lambda:not wifi()['open']);rows=wait(lambda:ctl('status')['ui']['rows']);assert any(r['keys']=='Alt+.' and r['action']=='wifi-toggle' for r in rows)
+        ctl('shortcuts-toggle');wait(lambda:not wifi()['open']);rows=wait(lambda:ctl('status')['ui']['rows']);assert any(r['keys']=='Alt+.' and r['action']=='menu-toggle' for r in rows)
         ctl('wifi-toggle');wait(ready);assert not ctl('status')['ui']['shortcuts_open']
-        changed=original.replace('width = 540','width = 420').replace('key = "period"','key = "comma"');config.write_text(changed);ctl('reload');wait(lambda:wifi()['view']['width']==420)
+        changed=original.replace('width = 640','width = 420').replace('key = "period"','key = "F8"');config.write_text(changed);ctl('reload');wait(lambda:wifi()['view']['width']==420)
         config.write_text(changed.replace('[wifi]\nenabled = true','[wifi]\nenabled = false'));ctl('reload');wait(lambda:not wifi()['open']);ctl('wifi-toggle');assert not wifi()['open']
         passed.append('Help/popup exclusion, live styling reload and disabling Wi-Fi controls work')
         config.write_text(original);ctl('reload')

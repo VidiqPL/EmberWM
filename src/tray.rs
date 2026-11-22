@@ -85,6 +85,7 @@ struct Bus {
 }
 #[derive(Default)]
 pub struct Runtime {
+    viewport: Option<crate::layout::Rect>,
     pub open: bool,
     pub view: Option<ui::View>,
     pub error: Option<String>,
@@ -103,7 +104,7 @@ pub struct Runtime {
 }
 impl Runtime {
     pub fn status(&self) -> serde_json::Value {
-        serde_json::json!({"open":self.open,"watcher":self.bus.is_some(),"items":self.items,"busy":self.busy(),"error":self.error,"menu":self.menu.is_some()})
+        serde_json::json!({"open":self.open,"watcher":self.bus.is_some(),"items":self.items,"busy":self.busy(),"error":self.error,"menu":self.menu.is_some(),"buffer_bytes":self.view.as_ref().map_or(0,|v|v.rect.size.w as u64*v.rect.size.h as u64*4)})
     }
     pub fn close(&mut self) {
         self.open = false;
@@ -366,13 +367,18 @@ impl Runtime {
         bus.ready.set(bus.pending.is_some());
         changed
     }
-    pub fn update(
+    pub fn update_in(
         &mut self,
         c: &Config,
         path: &Path,
         generation: u64,
         size: Size<i32, Logical>,
+        viewport: Option<crate::layout::Rect>,
     ) -> bool {
+        if self.viewport != viewport {
+            self.viewport = viewport;
+            self.view = None;
+        }
         let registry_changed = self.dispatch();
         if registry_changed {
             self.needs_list = true;
@@ -429,8 +435,11 @@ impl Runtime {
             self.view = None;
         }
         if self.view.is_none() {
-            let width = c.tray.width.min(size.w.max(1));
-            let capacity = ((size.h - 150) / 32).clamp(1, 16) as usize;
+            let width = self
+                .viewport
+                .map_or_else(|| c.tray.width.min(size.w.max(1)), |r| r.size.w);
+            let capacity =
+                ((self.viewport.map_or(size.h, |r| r.size.h) - 150) / 32).clamp(1, 16) as usize;
             let count = self.len();
             self.selected = self.selected.min(count.saturating_sub(1));
             if self.selected < self.offset {
@@ -456,10 +465,13 @@ impl Runtime {
             };
             let shown = count.saturating_sub(self.offset).min(capacity);
             let height = (shown.max(1) as i32 * 32 + 92).min(size.h.max(1));
-            let rect = Rectangle::new(
-                ((size.w - width) / 2, (size.h - height) / 2).into(),
-                (width, height).into(),
-            );
+            let height = self.viewport.map_or(height, |r| r.size.h);
+            let rect = self.viewport.unwrap_or_else(|| {
+                Rectangle::new(
+                    ((size.w - width) / 2, (size.h - height) / 2).into(),
+                    (width, height).into(),
+                )
+            });
             if let Ok(font) = panels::load_font(&c.panels, path) {
                 let bg = color(&c.panels.background).unwrap();
                 let fg = color(&c.panels.foreground).unwrap();

@@ -18,6 +18,7 @@ impl Ember {
     pub fn capture_allowed(&self) -> bool {
         self.session_active
             && !self.launcher.open
+            && !self.menu.open
             && !self.wifi.open
             && !self.tray.open
             && !self.ui.help_open
