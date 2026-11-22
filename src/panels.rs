@@ -315,7 +315,7 @@ pub struct Input {
     pub size: Size<i32, Logical>,
     pub workspace: usize,
     pub workspaces: usize,
-    pub occupied: Vec<usize>,
+    pub occupied: u16,
     pub title: String,
     pub floating: bool,
     pub fullscreen: bool,
@@ -335,8 +335,7 @@ impl Input {
                 .windows
                 .iter()
                 .filter(|w| w.scratchpad.is_none())
-                .map(|w| w.workspace)
-                .collect(),
+                .fold(0, |mask, w| mask | (1u16 << w.workspace)),
             title,
             floating: state
                 .windows
@@ -737,7 +736,7 @@ impl Runtime {
                 for n in 0..input.workspaces {
                     if !settings.hide_empty_workspaces
                         || n == input.workspace
-                        || input.occupied.contains(&n)
+                        || input.occupied & (1u16 << n) != 0
                     {
                         segments.push(Segment {
                             text: (n + 1).to_string(),
@@ -1060,7 +1059,7 @@ mod tests {
             size: (1280, 800).into(),
             workspace: 0,
             workspaces: 9,
-            occupied: vec![0, 2],
+            occupied: (1 << 0) | (1 << 2),
             title: "terminal".into(),
             floating: false,
             fullscreen: false,

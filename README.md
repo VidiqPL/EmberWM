@@ -99,6 +99,8 @@ for daily use or universal application/hardware support. Optional integration
 tests need additional tools; see [testing notes](docs/TESTING.md).
 The X11 workspace input regression and its scope are documented in
 [docs/X11_INPUT.md](docs/X11_INPUT.md).
+The [0.16.1 code/allocation audit](docs/CODE_AUDIT_0.16.1.md) records the UI refresh
+comparison and its memory-measurement limits.
 
 No release/publishing workflow is provided. Bugs and incomplete behavior are
 expected; source-level experimentation is the purpose of this repository.

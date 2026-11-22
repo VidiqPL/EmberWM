@@ -35,3 +35,8 @@ reasserts input focus for redundant activation of an already-focused parent.
 This follows the override-redirect focus rule in
 https://github.com/Supreeeme/xwayland-satellite/pull/494 .
 The compositor's 0.15.3 popup-focus override has been removed.
+
+0.16.1 adds `PointerHandle::current_focus_with_location`, a read-only accessor
+for the current target and its surface origin. Ember uses both to avoid sending
+synthetic motion for unrelated UI updates while retaining correct coordinates
+when a focused surface moves under a stationary pointer.

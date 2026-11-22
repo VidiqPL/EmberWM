@@ -109,7 +109,7 @@ impl Runtime {
     pub fn close(&mut self) {
         self.open = false;
         self.view = None;
-        self.rows.clear();
+        self.rows = Vec::new();
         self.menu = None;
         self.offset = 0;
         crate::memory::request_reclaim();

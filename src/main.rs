@@ -317,9 +317,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             data.state.dirty = true;
             let pointer = data.state.seat.get_pointer().unwrap();
             if !pointer.is_grabbed() && data.state.draw.is_none() && data.state.drag.is_none() {
-                let pos = pointer.current_location();
                 let time = data.state.start_time.elapsed().as_millis() as u32;
-                data.state.pointer_motion(pos, time);
+                data.state.refresh_pointer_focus(time);
             }
         }
         if native && data.state.config.audio.enabled != audio_session.is_some() {

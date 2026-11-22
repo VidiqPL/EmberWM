@@ -81,7 +81,8 @@ handling. Unsupported actions or denied authentication report an error.
 
 Only the selected tab has an active UI. Closing drops pixel buffers, fonts and
 Wi-Fi password storage; power sensors refresh every three seconds only while
-Power is open. No power refresh timer or worker remains after a closed read
+Power is open. Unchanged displayed readings reuse cached pixels; precise samples
+remain available through IPC. No power refresh timer or worker remains after a closed read
 finishes. An already authorized mutation is allowed to finish and report its
 result. The existing event-driven tray watcher remains available for app
 registrations.

@@ -46,7 +46,7 @@ with tempfile.TemporaryDirectory(prefix='ember-memory-audit-')as folder:
      image=Image.open(path);image.load();return image.convert('RGB')
     except (FileNotFoundError,OSError):return None
    im=wait(image_ready);assert im.size==(w,h)
-   for xx,yy in[(0,0),(w//2,h//2),(w-1,h-1)]:assert im.getpixel((xx,yy))==((x+xx)%251,(y+yy)%251,48 if y+yy<size['height']/2 else 208),(i,xx,yy,im.getpixel((xx,yy)))
+   for xx,yy in[(0,0),(w//2,h//2),(w-1,h-1)]:assert im.getpixel((xx,yy))==((x+xx)%251,(y+yy)%251,48 if y+yy<size['height']//2 else 208),(i,xx,yy,im.getpixel((xx,yy)))
    status=ctl('status')['clipboard'];assert status['allocated_bytes']==status['bytes'];results.append({'region':[x,y,w,h],'clipboard_bytes':status['bytes']})
   report={'passed':['After two idle seconds, panel font is released with identical rendered pixels and no idle redraw','Unchanged panel bitmaps never reload font; changing workspace reloads and redraws','Open help keeps its own shared font; closed help releases it','Fullscreen immediately drops hidden panel font/buffers','Nested top/bottom/full-output PNG clipboard captures preserve exact orientation and channels','Clipboard allocation is trimmed to encoded PNG length'],'captures':results,'scope':'Isolated nested compositor and synthetic pattern client; host desktop/clipboard untouched'}
   (ROOT/'docs/memory-audit-functional.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report,indent=2))

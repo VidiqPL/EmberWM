@@ -435,7 +435,7 @@ impl Ember {
         }
         let pos = pointer.current_location();
         let under = self.pointer_target(pos);
-        if pointer.current_focus().as_ref() != under.as_ref().map(|(s, _)| s) {
+        if pointer.current_focus_with_location() != under {
             self.pointer_motion(pos, time);
         }
     }

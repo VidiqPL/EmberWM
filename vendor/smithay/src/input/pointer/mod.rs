@@ -494,6 +494,16 @@ where
     D: SeatHandler,
     <D as SeatHandler>::PointerFocus: Clone,
 {
+    /// Retrieve the pointer focus and its surface origin in global coordinates.
+    ///
+    /// Comparing both values lets compositors reconcile a moved surface without
+    /// sending redundant motion when neither focus nor its origin changed.
+    pub fn current_focus_with_location(
+        &self,
+    ) -> Option<(<D as SeatHandler>::PointerFocus, Point<f64, Logical>)> {
+        self.inner.lock().unwrap().focus.clone()
+    }
+
     /// Retrieve the current pointer focus
     pub fn current_focus(&self) -> Option<<D as SeatHandler>::PointerFocus> {
         self.inner.lock().unwrap().focus.clone().map(|(focus, _)| focus)

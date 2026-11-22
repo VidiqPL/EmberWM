@@ -35,7 +35,7 @@ impl Action {
         }
     }
 }
-#[derive(Default, Serialize)]
+#[derive(Clone, Default, Serialize)]
 pub struct Snapshot {
     driver: String,
     governor: String,
@@ -46,6 +46,21 @@ pub struct Snapshot {
     gpu_temperature: Option<f64>,
     gpu_power: Option<f64>,
     helper: bool,
+}
+impl Snapshot {
+    fn same_display(&self, other: &Self) -> bool {
+        // Match the integer precision actually drawn, while keeping exact values in IPC.
+        let shown = |v: Option<f64>| v.map(f64::round_ties_even);
+        self.driver == other.driver
+            && self.governor == other.governor
+            && self.preference == other.preference
+            && self.supported == other.supported
+            && self.helper == other.helper
+            && self.gpu_mode == other.gpu_mode
+            && shown(self.cpu_temperature) == shown(other.cpu_temperature)
+            && shown(self.gpu_temperature) == shown(other.gpu_temperature)
+            && shown(self.gpu_power) == shown(other.gpu_power)
+    }
 }
 fn read(path: impl AsRef<Path>) -> String {
     fs::read_to_string(path)
@@ -232,6 +247,7 @@ pub struct Runtime {
     selected: usize,
     buttons: Vec<(Rect, usize)>,
     key: Option<(u64, Rect)>,
+    rasterizations: u64,
 }
 impl Runtime {
     pub fn open(&mut self) {
@@ -268,7 +284,7 @@ impl Runtime {
         }
     }
     pub fn status(&self) -> serde_json::Value {
-        serde_json::json!({"open":self.open,"busy":self.busy(),"confirmation":self.confirm,"snapshot":self.snapshot,"message":self.message,"buffer_bytes":self.view.as_ref().map_or(0,|v|v.rect.size.w as u64*v.rect.size.h as u64*4),"buttons":self.buttons.iter().map(|(r,i)|serde_json::json!({"index":i,"x":r.loc.x,"y":r.loc.y,"width":r.size.w,"height":r.size.h})).collect::<Vec<_>>()})
+        serde_json::json!({"open":self.open,"busy":self.busy(),"rasterizations":self.rasterizations,"confirmation":self.confirm,"snapshot":self.snapshot,"message":self.message,"buffer_bytes":self.view.as_ref().map_or(0,|v|v.rect.size.w as u64*v.rect.size.h as u64*4),"buttons":self.buttons.iter().map(|(r,i)|serde_json::json!({"index":i,"x":r.loc.x,"y":r.loc.y,"width":r.size.w,"height":r.size.h})).collect::<Vec<_>>()})
     }
     fn start(&mut self, request: Request) {
         if self.busy() {
@@ -304,7 +320,9 @@ impl Runtime {
                 self.next = Some(Instant::now() + Duration::from_secs(3));
             }
         }
-        self.key = None;
+        if self.release_modal || !self.message.is_empty() && self.job.is_none() {
+            self.key = None;
+        }
     }
     pub fn cancel_confirmation(&mut self) -> bool {
         let had = self.confirm.take().is_some();
@@ -416,17 +434,26 @@ impl Runtime {
             }
             if self.open {
                 match result {
-                    Ok(s) => {
-                        self.snapshot = s;
+                    Ok(snapshot) => {
+                        changed = !self.snapshot.same_display(&snapshot);
+                        self.snapshot = snapshot;
                         if self.message == "Authorizing CPU profile change…" {
                             self.message = "CPU profile applied.".into();
+                            changed = true;
                         }
                     }
-                    Err(e) => self.message = e,
-                };
-                self.key = None;
+                    Err(error) => {
+                        changed = self.message != error;
+                        self.message = error;
+                    }
+                }
+                if changed {
+                    self.key = None;
+                }
                 self.next = Some(Instant::now() + Duration::from_secs(3));
-                changed = true;
+            } else {
+                // The tab may have closed before its short-lived worker completed.
+                crate::memory::request_reclaim();
             }
         }
         if !self.open {
@@ -601,7 +628,7 @@ impl Runtime {
                     self.selected == i + 3,
                 );
             }
-            let hint = if self.busy() {
+            let hint = if self.pending_action.is_some() {
                 "Working…"
             } else if !self.snapshot.helper {
                 "CPU profile helper unavailable; session controls still work."
@@ -628,6 +655,7 @@ impl Runtime {
         });
         self.buttons = buttons;
         self.view = Some(ui::View::overlay(rect, buffer));
+        self.rasterizations += 1;
         true
     }
 }
@@ -635,6 +663,43 @@ impl Runtime {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn unchanged_displayed_samples_reuse_pixels_but_keep_precise_ipc_values() {
+        let config = Config::default();
+        let path = Path::new("/tmp/config.toml");
+        let rect = Some(Rect::new((0, 0).into(), (640, 518).into()));
+        let mut runtime = Runtime {
+            open: true,
+            snapshot: Snapshot {
+                driver: "fixture-epp".into(),
+                cpu_temperature: Some(50.1),
+                gpu_temperature: Some(32.1),
+                gpu_power: Some(5.1),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        assert!(runtime.update(&config, path, 0, rect));
+        assert_eq!(runtime.rasterizations, 1);
+        let (tx, rx) = mpsc::sync_channel(1);
+        let mut sample = runtime.snapshot.clone();
+        sample.cpu_temperature = Some(50.2);
+        sample.gpu_power = Some(5.2);
+        tx.send(Ok(sample)).unwrap();
+        runtime.job = Some(rx);
+        assert!(!runtime.update(&config, path, 0, rect));
+        assert_eq!(runtime.rasterizations, 1);
+        assert_eq!(runtime.snapshot.cpu_temperature, Some(50.2));
+        let (tx, rx) = mpsc::sync_channel(1);
+        let mut sample = runtime.snapshot.clone();
+        sample.cpu_temperature = Some(51.2);
+        tx.send(Ok(sample)).unwrap();
+        runtime.job = Some(rx);
+        assert!(runtime.update(&config, path, 0, rect));
+        assert_eq!(runtime.rasterizations, 2);
+        runtime.close();
+        assert!(runtime.wake().is_none() && runtime.view.is_none());
+    }
     #[test]
     fn session_actions_require_confirmation_and_close_releases_state() {
         let mut r = Runtime {
